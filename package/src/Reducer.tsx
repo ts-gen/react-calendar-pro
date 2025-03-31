@@ -2,6 +2,12 @@ import { createContext, type Dispatch, type ReactNode, type RefObject, useContex
 import type { LocaleInfo } from "./getLocale"
 import getLocale from "./getLocale"
 
+interface CalendarDay {
+  idx: number
+  date: string
+  isWeekend: boolean
+}
+
 export interface CalendarState {
   year: number
   month: number
@@ -13,6 +19,7 @@ export interface CalendarState {
   localeInfo: LocaleInfo
   show: boolean
   selectedWeekends: number[]
+  calendar: CalendarDay[]
   mainElement: RefObject<HTMLDivElement | null> | null
   inputElement: RefObject<HTMLInputElement | null> | null
 }
@@ -50,6 +57,32 @@ export type CalendarAction = {
   type: 'PREV_MONTH'
 }
 
+const updateCalendarDay = (year: number, month: number, dayList: CalendarDay[], selectedWeekends: number[]): CalendarDay[] => {
+  const firstDayOfMonth = new Date(year, month, 1)
+    const lastDayOfMonth = new Date(year, month + 1, 0)
+    const firstDayOfWeek = firstDayOfMonth.getDay()
+    const lastDayOfMonthDate = lastDayOfMonth.getDate()
+    let inRange = false
+    let day = 1
+    for (let i = 0; i < 42; i++) {
+      if (firstDayOfWeek === i && day === 1) {
+        inRange = true
+      }
+      if (inRange) {
+        dayList[i].date = day.toString()
+        day++
+      } else {
+        dayList[i].date = ''
+      }
+      dayList[i].isWeekend = selectedWeekends.includes(i % 7)
+      if (day > lastDayOfMonthDate) {
+        inRange = false
+      }
+    }
+
+  return dayList
+}
+
 const calendarReducer = (state: CalendarState, action: CalendarAction): CalendarState => {
   switch (action.type) {
     case 'SELECT_YEAR':
@@ -68,6 +101,7 @@ const calendarReducer = (state: CalendarState, action: CalendarAction): Calendar
       return { ...state, inputElement: action.payload.inputElement }
     case 'PREV_MONTH': {
       const prevDate = new Date(state.year, state.month - 1)
+      state.calendar = updateCalendarDay(prevDate.getFullYear(), prevDate.getMonth(), state.calendar, state.selectedWeekends)
       return {
         ...state,
         year: prevDate.getFullYear(),
@@ -84,21 +118,34 @@ export const CalendarContext = createContext<
   { state: CalendarState, dispatch: Dispatch<CalendarAction> } | undefined
 >(undefined)
 
-export const CalendarProvider = ({ children }: { children?: ReactNode }) => {
-  const [state, dispatch] = useReducer(calendarReducer, {
-    year: new Date().getFullYear(),
-    month: new Date().getMonth(),
-    day: new Date().getDate(),
-    selectedYear: new Date().getFullYear(),
-    selectedMonth: new Date().getMonth(),
-    selectedDay: new Date().getDate(),
+const initialState = (): CalendarState => {
+  const date = new Date()
+  const defaultWeekends = [0, 6]
+  const calendar = Array.from({ length: 42 }, (_, i) => ({
+    idx: i,
+    date: '',
+    isWeekend: false,
+  }))
+
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth(),
+    day: date.getDate(),
+    selectedYear: date.getFullYear(),
+    selectedMonth: date.getMonth(),
+    selectedDay: date.getDate(),
     locale: 'en',
     localeInfo: getLocale({ locale: 'en' }),
     show: false,
-    selectedWeekends: [0, 6],
+    selectedWeekends: defaultWeekends,
     mainElement: null,
     inputElement: null,
-  })
+    calendar: updateCalendarDay(date.getFullYear(), date.getMonth(), calendar, defaultWeekends),
+  }
+}
+
+export const CalendarProvider = ({ children }: { children?: ReactNode }) => {
+  const [ state, dispatch ] = useReducer(calendarReducer, initialState())
 
   return (
     <CalendarContext.Provider value={{ state, dispatch }}>

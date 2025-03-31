@@ -1,4 +1,4 @@
-import { createContext, type Dispatch, type ReactNode, type Ref, type RefObject, useContext, useReducer } from "react"
+import { createContext, type Dispatch, type ReactNode, type RefObject, useContext, useReducer } from "react"
 import type { LocaleInfo } from "./getLocale"
 import getLocale from "./getLocale"
 
@@ -46,6 +46,8 @@ export type CalendarAction = {
   payload: {
     inputElement: RefObject<HTMLInputElement | null> | null
   }
+} | {
+  type: 'PREV_MONTH'
 }
 
 const calendarReducer = (state: CalendarState, action: CalendarAction): CalendarState => {
@@ -64,6 +66,15 @@ const calendarReducer = (state: CalendarState, action: CalendarAction): Calendar
       return { ...state, mainElement: action.payload.mainElement }
     case 'SET_INPUT_ELEMENT':
       return { ...state, inputElement: action.payload.inputElement }
+    case 'PREV_MONTH': {
+      const prevDate = new Date(state.year, state.month - 1)
+      return {
+        ...state,
+        year: prevDate.getFullYear(),
+        month: prevDate.getMonth(),
+        day: prevDate.getDate(),
+      }
+    }
     default:
       return state
   }

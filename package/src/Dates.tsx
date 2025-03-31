@@ -8,12 +8,12 @@ const Dates = () => {
     const firstDayOfMonth = new Date(state.year, state.month, 1)
     const lastDayOfMonth = new Date(state.year, state.month + 1, 0)
     const firstDayOfWeek = firstDayOfMonth.getDay()
-    const lastDayOfWeek = lastDayOfMonth.getDay()
+    const lastDayOfMonthDate = lastDayOfMonth.getDate()
     const dates: { index: number, date: string }[] = []
     let inRange = false
     let day = 1
     for (let i = 0; i < 42; i++) {
-      if (firstDayOfWeek === i && !inRange) {
+      if (firstDayOfWeek === i && day === 1) {
         inRange = true
       }
       if (inRange) {
@@ -22,14 +22,12 @@ const Dates = () => {
       } else {
         dates.push({ index: i, date: '' })
       }
-      if (lastDayOfWeek === i && inRange) {
+      if (day > lastDayOfMonthDate) {
         inRange = false
       }
     }
     return dates
   }, [state.year, state.month])
-
-  console.log('[dates]', dates)
 
   return (
     <div className="vc-dates" data-vc="dates" aria-live="assertive" role="grid">

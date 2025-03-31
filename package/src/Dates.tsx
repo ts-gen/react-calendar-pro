@@ -1,12 +1,14 @@
 import { useMemo } from "react"
-import { useCalendar } from "./Reducer"
+import { useCalendarSelector } from "./Reducer"
 
 const Dates = () => {
-  const { state } = useCalendar()
+  const selectedWeekends = useCalendarSelector((state) => state.selectedWeekends)
+  const year = useCalendarSelector((state) => state.year)
+  const month = useCalendarSelector((state) => state.month)
 
   const dates = useMemo(() => {
-    const firstDayOfMonth = new Date(state.year, state.month, 1)
-    const lastDayOfMonth = new Date(state.year, state.month + 1, 0)
+    const firstDayOfMonth = new Date(year, month, 1)
+    const lastDayOfMonth = new Date(year, month + 1, 0)
     const firstDayOfWeek = firstDayOfMonth.getDay()
     const lastDayOfMonthDate = lastDayOfMonth.getDate()
     const dates: { index: number, date: string }[] = []
@@ -27,12 +29,12 @@ const Dates = () => {
       }
     }
     return dates
-  }, [state.year, state.month])
+  }, [year, month])
 
   return (
     <div className="vc-dates" data-vc="dates" aria-live="assertive" role="grid">
       {dates.map((date) => {
-        const isWeekend = state.selectedWeekends.includes(date.index % 7)
+        const isWeekend = selectedWeekends.includes(date.index % 7)
         if (isWeekend) {
           return (
             <div key={date.index} className="vc-date" data-vc-date={date} data-vc-date-week-day={date.index} data-vc-date-weekend="">

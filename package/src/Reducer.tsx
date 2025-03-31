@@ -114,3 +114,8 @@ export const useCalendar = () => {
   }
   return context
 }
+
+export const useCalendarSelector = <T,>(selector: (state: CalendarState) => T): T => {
+  const { state } = useCalendar();
+  return selector(state);
+}

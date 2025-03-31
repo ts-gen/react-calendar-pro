@@ -4,7 +4,7 @@ const Year = () => {
   const { state } = useCalendar()
 
   return (
-    <button type="button" className="btn btn-sm" data-vc="year">{state.year}</button>
+    <button type="button" className="vc-year btn btn-sm" data-vc="year">{state.year}</button>
   )
 }
 

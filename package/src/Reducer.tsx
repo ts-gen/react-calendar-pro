@@ -1,4 +1,4 @@
-import { createContext, type Dispatch, type ReactNode, useContext, useReducer } from "react"
+import { createContext, type Dispatch, type ReactNode, type Ref, type RefObject, useContext, useReducer } from "react"
 import type { LocaleInfo } from "./getLocale"
 import getLocale from "./getLocale"
 
@@ -11,6 +11,10 @@ export interface CalendarState {
   selectedDay: number
   locale: string
   localeInfo: LocaleInfo
+  show: boolean
+  selectedWeekends: number[]
+  mainElement: RefObject<HTMLDivElement | null> | null
+  inputElement: RefObject<HTMLInputElement | null> | null
 }
 
 export type CalendarAction = {
@@ -28,6 +32,20 @@ export type CalendarAction = {
   payload: {
     day: number
   }
+} | {
+  type: 'SHOW'
+} | {
+  type: 'HIDE'
+} | {
+  type: 'SET_MAIN_ELEMENT'
+  payload: {
+    mainElement: RefObject<HTMLDivElement | null> | null
+  }
+} | {
+  type: 'SET_INPUT_ELEMENT'
+  payload: {
+    inputElement: RefObject<HTMLInputElement | null> | null
+  }
 }
 
 const calendarReducer = (state: CalendarState, action: CalendarAction): CalendarState => {
@@ -38,6 +56,14 @@ const calendarReducer = (state: CalendarState, action: CalendarAction): Calendar
       return { ...state, selectedMonth: action.payload.month }
     case 'SELECT_DAY':
       return { ...state, selectedDay: action.payload.day }
+    case 'SHOW':
+      return { ...state, show: true }
+    case 'HIDE':
+      return { ...state, show: false }
+    case 'SET_MAIN_ELEMENT':
+      return { ...state, mainElement: action.payload.mainElement }
+    case 'SET_INPUT_ELEMENT':
+      return { ...state, inputElement: action.payload.inputElement }
     default:
       return state
   }
@@ -55,8 +81,12 @@ export const CalendarProvider = ({ children }: { children?: ReactNode }) => {
     selectedYear: new Date().getFullYear(),
     selectedMonth: new Date().getMonth(),
     selectedDay: new Date().getDate(),
-    locale: 'en_US',
-    localeInfo: getLocale({ locale: 'en_US' })
+    locale: 'en',
+    localeInfo: getLocale({ locale: 'en' }),
+    show: false,
+    selectedWeekends: [0, 6],
+    mainElement: null,
+    inputElement: null,
   })
 
   return (

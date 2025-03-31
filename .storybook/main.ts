@@ -7,7 +7,6 @@ const config: StorybookConfig = {
   ],
   "addons": [
     "@storybook/addon-essentials",
-    "@storybook/addon-onboarding",
     "@storybook/experimental-addon-test"
   ],
   "framework": {

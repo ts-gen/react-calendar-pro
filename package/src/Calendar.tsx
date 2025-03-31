@@ -1,8 +1,11 @@
-import { type Ref, useImperativeHandle, type RefObject, type ReactNode, useEffect } from "react"
+import { type Ref, useImperativeHandle, type RefObject, type ReactNode, useEffect, useCallback } from "react"
 import type { Reset } from "./types"
 import Year from "./Year"
 import Month from "./Month"
-import { CalendarProvider } from "./Reducer"
+import { CalendarProvider, useCalendar } from "./Reducer"
+import DefaultLayout from "./DefaultLayout"
+
+import './styles/index.css'
 
 interface CalendarRef {
   show: () => void
@@ -12,16 +15,20 @@ interface CalendarRef {
 
 interface CalendarProps {
   inputRef: RefObject<HTMLInputElement | null> | null
-  ref: Ref<CalendarRef>
+  ref?: Ref<CalendarRef>
   children?: ReactNode
 }
 
-const Calendar = ({ inputRef, ref, children }: CalendarProps) => {
+const Main = ({ inputRef, ref, children }: CalendarProps) => {
+  const { dispatch, state } = useCalendar()
+
   useImperativeHandle(ref, () => {
     return {
       show: () => {
+        dispatch({ type: 'SHOW' })
       },
       hide: () => {
+        dispatch({ type: 'HIDE' })
       },
       update: (options: Partial<Reset>) => {
       }
@@ -32,14 +39,13 @@ const Calendar = ({ inputRef, ref, children }: CalendarProps) => {
     const input = inputRef?.current
     if (!input) return
 
+    dispatch({ type: 'SET_INPUT_ELEMENT', payload: { inputElement: inputRef } })
     const handleFocus = () => {
-      // @ts-ignore - we know show exists from useImperativeHandle
-      ref?.current?.show()
+      dispatch({ type: 'SHOW' })
     }
 
     const handleBlur = () => {
-      // @ts-ignore - we know hide exists from useImperativeHandle
-      ref?.current?.hide()
+      // dispatch({ type: 'HIDE' })
     }
 
     input.addEventListener('focus', handleFocus)
@@ -49,17 +55,37 @@ const Calendar = ({ inputRef, ref, children }: CalendarProps) => {
       input.removeEventListener('focus', handleFocus)
       input.removeEventListener('blur', handleBlur)
     }
-  }, [ref, inputRef])
+  }, [inputRef, dispatch])
 
   if (children === undefined) {
     return (
-      <CalendarProvider />
+      <>
+        {state.show && <DefaultLayout />}
+      </>
+    )
+  }
+
+  return (
+    <>
+      {state.show && children}
+    </>
+  )
+}
+
+export const Calendar = ({ inputRef, ref, children }: CalendarProps) => {
+  if (children === undefined) {
+    return (
+      <CalendarProvider>
+      <Main inputRef={inputRef} ref={ref} />
+      </CalendarProvider>
     )
   }
 
   return (
     <CalendarProvider>
-      {children}
+      <Main inputRef={inputRef} ref={ref}>
+        {children}
+      </Main>
     </CalendarProvider>
   )
 }

@@ -76,7 +76,7 @@ export const Calendar = ({ inputRef, ref, children }: CalendarProps) => {
   if (children === undefined) {
     return (
       <CalendarProvider>
-      <Main inputRef={inputRef} ref={ref} />
+        <Main inputRef={inputRef} ref={ref} />
       </CalendarProvider>
     )
   }

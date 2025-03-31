@@ -6,6 +6,8 @@ import Dates from "./Dates"
 import ArrowPrev from "./ArrowPrev"
 import ArrowNext from "./ArrowNext"
 import { useCalendar } from "./Reducer"
+import Header from "./Header"
+import Body from "./Body"
 
 const DefaultLayout = () => {
   const { dispatch, state } = useCalendar()
@@ -45,21 +47,21 @@ const DefaultLayout = () => {
 
   return (
     <div tabIndex={0} className="vc" data-vc="calendar" data-vc-theme="light" data-vc-type="default" role="application" ref={ref} data-vc-input="">
-      <div className="vc-header" data-vc="header" role="toolbar" aria-label="Calendar Navigation">
+      <Header>
         <ArrowPrev />
-        <div className="vc-header__content" data-vc-header="content">
+        <Header.Content>
           <Month />
           <Year />
-        </div>
+        </Header.Content>
         <ArrowNext />
-      </div>
-      <div className="vc-wrapper" data-vc="wrapper">
-        <div className="vc-content" data-vc="content">
+      </Header>
+      <Body>
+        <Body.Content>
           <Week />
           <Dates />
           {/* <DateRangeTooltip /> */}
-        </div>
-      </div>
+        </Body.Content>
+      </Body>
       {/* <ControlTime /> */}
     </div>
   )

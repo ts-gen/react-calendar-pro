@@ -1,4 +1,4 @@
-import { type Ref, useImperativeHandle, type RefObject, type ReactNode, useEffect } from "react"
+import { type Ref, useImperativeHandle, type RefObject, type ReactNode, useEffect, type ComponentProps } from "react"
 import type { Reset } from "./types"
 import Year from "./Year"
 import Month from "./Month"
@@ -15,15 +15,17 @@ interface CalendarRef {
 
 interface CalendarProps {
     inputRef: RefObject<HTMLInputElement | null> | null
+    onDateSelected?: (date: string) => void
     ref?: Ref<CalendarRef>
     children?: ReactNode
 }
 
-const Main = ({ inputRef, ref, children }: CalendarProps) => {
+export const Calendar = ({ inputRef, onDateSelected, ref, children, ...props }: CalendarProps & Omit<ComponentProps<"div">, "ref">) => {
     const isShown = useCalendarState(state => state.isShown)
     const showCalendar = useCalendarState(state => state.show)
     const hideCalendar = useCalendarState(state => state.hide)
     const setInputElement = useCalendarState(state => state.setInputElement)
+    const setOnDateSelected = useCalendarState(state => state.setOnDateSelected)
 
     useImperativeHandle(ref, () => {
         return {
@@ -37,6 +39,10 @@ const Main = ({ inputRef, ref, children }: CalendarProps) => {
             }
         }
     })
+
+    useEffect(() => {
+        setOnDateSelected(onDateSelected)
+    }, [onDateSelected, setOnDateSelected])
 
     useEffect(() => {
         const input = inputRef?.current
@@ -63,7 +69,7 @@ const Main = ({ inputRef, ref, children }: CalendarProps) => {
     if (children === undefined) {
         return (
             <>
-                {isShown && <DefaultLayout />}
+                {isShown && <DefaultLayout {...props} />}
             </>
         )
     }
@@ -72,14 +78,6 @@ const Main = ({ inputRef, ref, children }: CalendarProps) => {
         <>
             {isShown && children}
         </>
-    )
-}
-
-export const Calendar = ({ inputRef, ref, children }: CalendarProps) => {
-    return (
-        <Main inputRef={inputRef} ref={ref}>
-            {children}
-        </Main>
     )
 }
 

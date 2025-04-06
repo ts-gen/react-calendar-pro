@@ -39,6 +39,7 @@ interface CalendarState {
     dateFormat: string
     dateTimeFormat: string
     timeMode: boolean
+    onDateSelected?: (date: string) => void
     setDisplayYear: (year: number) => void
     setDisplayMonth: (month: number) => void
     setSelectedDate: (year: number, month: number, day: number) => void
@@ -55,6 +56,7 @@ interface CalendarState {
     nextMonth: () => void
     show: () => void
     hide: () => void
+    setOnDateSelected: (onDateSelected: ((date: string) => void) | undefined) => void
 }
 
 export const useCalendarState = create<CalendarState>()((set) => ({
@@ -134,8 +136,8 @@ export const useCalendarState = create<CalendarState>()((set) => ({
 
         if (state.inputElement?.current) {
             const date = new Date(selectedYear, selectedMonth, selectedDay)
-            state.inputElement.current.value = dayjs(date).format(state.dateFormat)
-            state.inputElement.current.dispatchEvent(new FocusEvent('focus', { bubbles: true }))
+            const dateValue = dayjs(date).format(state.dateFormat)
+            state.onDateSelected?.(dateValue)
         }
 
         return {
@@ -199,6 +201,7 @@ export const useCalendarState = create<CalendarState>()((set) => ({
             calendar: updatedCalendar,
         }
     }),
+    setOnDateSelected: (onDateSelected: ((date: string) => void) | undefined) => set(() => ({ onDateSelected }))
 }))
 
 const updateCalendarDay = (

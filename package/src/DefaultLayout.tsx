@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { type ComponentProps, useEffect, useRef } from "react"
 import Month from "./Month"
 import Week from "./Week"
 import Year from "./Year"
@@ -9,7 +9,7 @@ import Header from "./Header"
 import Body from "./Body"
 import { useCalendarState } from './Reducer'
 
-const DefaultLayout = () => {
+const DefaultLayout = (props: Omit<ComponentProps<"input">, "ref">) => {
     const setMainElement = useCalendarState((state) => state.setMainElement)
     const ref = useRef<HTMLDivElement>(null)
     const renderCount = useRef(0)
@@ -25,7 +25,7 @@ const DefaultLayout = () => {
     console.log('DefaultLayout Render', renderCount.current++)
 
     return (
-        <div tabIndex={0} className="vc" data-vc="calendar" data-vc-theme="light" data-vc-type="default" role="application" ref={ref} data-vc-input="">
+        <div {...props} tabIndex={0} className="vc" data-vc="calendar" data-vc-theme="light" data-vc-type="default" role="application" ref={ref} data-vc-input="">
             <Header>
                 <ArrowPrev />
                 <Header.Content>

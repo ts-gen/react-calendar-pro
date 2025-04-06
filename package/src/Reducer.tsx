@@ -6,8 +6,10 @@ import { create } from 'zustand'
 
 interface CalendarDay {
     idx: number
-    date: string
+    date: number
+    dateStr: string
     isHoliday: boolean
+    isSelected: boolean
 }
 
 interface CalendarState {
@@ -31,9 +33,8 @@ interface CalendarState {
     timeMode: boolean
     setDisplayYear: (year: number) => void
     setDisplayMonth: (month: number) => void
-    setSelectedYear: (year: number) => void
-    setSelectedMonth: (month: number) => void
-    setSelectedDay: (day: number) => void
+    setSelectedDate: (year: number, month: number, day: number) => void
+    setSelectedDateByIdx: (idx: number) => void
     setSelectedHour: (hour: number) => void
     setSelectedMinute: (minute: number) => void
     setLocale: (locale: string) => void
@@ -53,7 +54,7 @@ const currentDate = new Date()
 export const useCalendarState = create<CalendarState>()((set) => ({
     displayYear: currentDate.getFullYear(),
     displayMonth: currentDate.getMonth(),
-    calendar: Array.from({ length: 42 }, (_, i) => ({ idx: i, date: '', isHoliday: false })),
+    calendar: Array.from({ length: 42 }, (_, i) => ({ idx: i, date: 0, dateStr: '', isHoliday: false, isSelected: false })),
     selectedWeekends: [0, 6],
     isShown: false,
     locale: 'en',
@@ -79,7 +80,8 @@ export const useCalendarState = create<CalendarState>()((set) => ({
                 isSelected = true
             }
         }
-        const updatedCalendar = updateCalendarDay(year, month, state.calendar, state.selectedWeekends, state.holiday)
+        const updatedCalendar = updateCalendarDay(year, month, state.calendar, state.selectedWeekends,
+            state.selectedYear, state.selectedMonth, state.selectedDay, state.holiday)
 
         return {
             displayYear: year,
@@ -99,35 +101,59 @@ export const useCalendarState = create<CalendarState>()((set) => ({
         }
     }),
     setDisplayYear: (year: number) => set((state) => {
-        const updatedCalendar = updateCalendarDay(year, state.displayMonth, state.calendar, state.selectedWeekends, state.holiday)
+        const updatedCalendar = updateCalendarDay(year, state.displayMonth, state.calendar, state.selectedWeekends,
+            state.selectedYear, state.selectedMonth, state.selectedDay, state.holiday)
         return {
             displayYear: year,
             calendar: updatedCalendar,
         }
     }),
     setDisplayMonth: (month: number) => set((state) => {
-        const updatedCalendar = updateCalendarDay(state.displayYear, month, state.calendar, state.selectedWeekends, state.holiday)
+        const updatedCalendar = updateCalendarDay(state.displayYear, month, state.calendar, state.selectedWeekends,
+            state.selectedYear, state.selectedMonth, state.selectedDay, state.holiday)
         return {
             displayMonth: month,
             calendar: updatedCalendar,
         }
     }),
-    setSelectedYear: (year: number) => set(() => ({ selectedYear: year })),
-    setSelectedMonth: (month: number) => set(() => ({ selectedMonth: month })),
-    setSelectedDay: (day: number) => set(() => ({ selectedDay: day })),
+    setSelectedDateByIdx: (idx: number) => set((state) => {
+        const selectedDay = state.calendar[idx].date
+        const selectedMonth = state.displayMonth
+        const selectedYear = state.displayYear
+        const updatedCalendar = updateCalendarDay(state.displayYear, state.displayMonth, state.calendar, state.selectedWeekends,
+            selectedYear, selectedMonth, selectedDay, state.holiday)
+        return {
+            calendar: updatedCalendar,
+            selectedYear,
+            selectedMonth,
+            selectedDay,
+        }
+    }),
+    setSelectedDate: (year: number, month: number, day: number) => set((state) => {
+        const updatedCalendar = updateCalendarDay(state.displayYear, month, state.calendar, state.selectedWeekends,
+            year, month, day, state.holiday)
+        return {
+            selectedYear: year,
+            selectedMonth: month,
+            selectedDay: day,
+            calendar: updatedCalendar
+        }
+    }),
     setSelectedHour: (hour: number) => set(() => ({ selectedHour: hour })),
     setSelectedMinute: (minute: number) => set(() => ({ selectedMinute: minute })),
     setMainElement: (mainElement: RefObject<HTMLDivElement | null> | null) => set(() => ({ mainElement })),
     setInputElement: (inputElement: RefObject<HTMLInputElement | null> | null) => set(() => ({ inputElement })),
     setWeekends: (weekends: number[]) => set((state) => {
-        const updatedCalendar = updateCalendarDay(state.displayYear, state.displayMonth, state.calendar, weekends, state.holiday)
+        const updatedCalendar = updateCalendarDay(state.displayYear, state.displayMonth, state.calendar, weekends,
+            state.selectedYear, state.selectedMonth, state.selectedDay, state.holiday)
         return {
             selectedWeekends: weekends,
             calendar: updatedCalendar,
         }
     }),
     setHoliday: (holiday: string[]) => set((state) => {
-        const updatedCalendar = updateCalendarDay(state.displayYear, state.displayMonth, state.calendar, state.selectedWeekends, holiday)
+        const updatedCalendar = updateCalendarDay(state.displayYear, state.displayMonth, state.calendar, state.selectedWeekends,
+            state.selectedYear, state.selectedMonth, state.selectedDay, holiday)
         return {
             holiday,
             calendar: updatedCalendar,
@@ -137,7 +163,8 @@ export const useCalendarState = create<CalendarState>()((set) => ({
     prevMonth: () => set((state) => {
         const month = state.displayMonth - 1 < 0 ? 11 : state.displayMonth - 1
         const year = month === 11 ? state.displayYear - 1 : state.displayYear
-        const updatedCalendar = updateCalendarDay(year, month, state.calendar, state.selectedWeekends, state.holiday)
+        const updatedCalendar = updateCalendarDay(year, month, state.calendar, state.selectedWeekends,
+            state.selectedYear, state.selectedMonth, state.selectedDay, state.holiday)
         return {
             displayYear: year,
             displayMonth: month,
@@ -147,7 +174,8 @@ export const useCalendarState = create<CalendarState>()((set) => ({
     nextMonth: () => set((state) => {
         const month = state.displayMonth + 1 > 11 ? 0 : state.displayMonth + 1
         const year = month === 0 ? state.displayYear + 1 : state.displayYear
-        const updatedCalendar = updateCalendarDay(year, month, state.calendar, state.selectedWeekends, state.holiday)
+        const updatedCalendar = updateCalendarDay(year, month, state.calendar, state.selectedWeekends,
+            state.selectedYear, state.selectedMonth, state.selectedDay, state.holiday)
         return {
             displayYear: year,
             displayMonth: month,
@@ -161,6 +189,9 @@ const updateCalendarDay = (
     month: number,
     dayList: CalendarDay[],
     selectedWeekends: number[],
+    selectedYear: number | undefined,
+    selectedMonth: number | undefined,
+    selectedDay: number | undefined,
     _holiday: string[]
 ): CalendarDay[] => {
     const firstDayOfMonth = new Date(year, month, 1)
@@ -174,11 +205,13 @@ const updateCalendarDay = (
             inRange = true
         }
         if (inRange) {
-            dayList[i].date = day.toString()
+            dayList[i].date = day
+            dayList[i].dateStr = day.toString()
             day++
         } else {
-            dayList[i].date = ''
+            dayList[i].dateStr = ''
         }
+        dayList[i].isSelected = year === selectedYear && month === selectedMonth && dayList[i].date === selectedDay
         dayList[i].isHoliday = selectedWeekends.includes(i % 7)
         if (day > lastDayOfMonthDate) {
             inRange = false

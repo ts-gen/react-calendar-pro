@@ -127,11 +127,19 @@ export const useCalendarState = create<CalendarState>()((set) => ({
     }),
     setSelectedDateByIdx: (idx: number) => set((state) => {
         const selectedDay = state.calendar[idx].date
-        const selectedMonth = state.displayMonth
-        const selectedYear = state.displayYear
+        const selectedMonth = state.calendar[idx].month
+        const selectedYear = state.calendar[idx].year
         const updatedCalendar = updateCalendarDay(state.displayYear, state.displayMonth, state.calendar, state.selectedWeekends,
             selectedYear, selectedMonth, selectedDay, state.holiday)
+
+        if (state.inputElement?.current) {
+            const date = new Date(selectedYear, selectedMonth, selectedDay)
+            state.inputElement.current.value = dayjs(date).format(state.dateFormat)
+            state.inputElement.current.dispatchEvent(new FocusEvent('focus', { bubbles: true }))
+        }
+
         return {
+            isShown: false,
             calendar: updatedCalendar,
             selectedYear,
             selectedMonth,
@@ -253,7 +261,7 @@ const updateCalendarDay = (
             isDisplay = false
         }
         dayList[i].isDisplay = isDisplay
-        dayList[i].isSelected = year === selectedYear && month === selectedMonth && dayList[i].date === selectedDay
+        dayList[i].isSelected = dayList[i].year === selectedYear && dayList[i].month === selectedMonth && dayList[i].date === selectedDay
         dayList[i].isHoliday = selectedWeekends.includes(day)
         if (date > lastDayOfMonthDate) {
             inRange = false

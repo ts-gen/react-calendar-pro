@@ -8,6 +8,7 @@ interface CalendarDay {
     idx: number
     date: number
     dateStr: string
+    isToday: boolean
     isHoliday: boolean
     isSelected: boolean
     isDisplay: boolean
@@ -51,12 +52,10 @@ interface CalendarState {
     hide: () => void
 }
 
-const currentDate = new Date()
-
 export const useCalendarState = create<CalendarState>()((set) => ({
-    displayYear: currentDate.getFullYear(),
-    displayMonth: currentDate.getMonth(),
-    calendar: Array.from({ length: 42 }, (_, i) => ({ idx: i, date: 0, dateStr: '', isHoliday: false, isSelected: false, isDisplay: false })),
+    displayYear: 0,
+    displayMonth: 0,
+    calendar: Array.from({ length: 42 }, (_, i) => ({ idx: i, date: 0, dateStr: '', isHoliday: false, isSelected: false, isDisplay: false, isToday: false })),
     selectedWeekends: [0, 6],
     isShown: false,
     locale: 'en',
@@ -73,13 +72,13 @@ export const useCalendarState = create<CalendarState>()((set) => ({
         const today = new Date()
         let year = today.getFullYear()
         let month = today.getMonth()
-        let day = today.getDate()
+        let date = today.getDate()
         if (inputContent && hasData) {
             const parseDate = dayjs(inputContent, state.dateTimeFormat)
             if (parseDate.isValid()) {
                 year = parseDate.year()
                 month = parseDate.month()
-                day = parseDate.date()
+                date = parseDate.date()
                 isSelected = true
             }
         }
@@ -91,7 +90,7 @@ export const useCalendarState = create<CalendarState>()((set) => ({
             displayMonth: month,
             selectedYear: isSelected ? year : undefined,
             selectedMonth: isSelected ? month : undefined,
-            selectedDay: isSelected ? day : undefined,
+            selectedDay: isSelected ? date : undefined,
             calendar: updatedCalendar,
             isShown: true,
         }
@@ -197,6 +196,7 @@ const updateCalendarDay = (
     selectedDay: number | undefined,
     _holiday: string[]
 ): CalendarDay[] => {
+    const today = new Date()
     const firstDayOfMonth = new Date(year, month, 1)
     const lastDayOfMonth = new Date(year, month + 1, 0)
     const firstDayOfWeek = firstDayOfMonth.getDay()
@@ -210,6 +210,7 @@ const updateCalendarDay = (
         if (firstDayOfWeek === day && date === 1) {
             inRange = true
         }
+        dayList[i].isToday = year === today.getFullYear() && month === today.getMonth() && date === today.getDate()
         if (inRange) {
             dayList[i].date = date
             dayList[i].dateStr = date.toString()

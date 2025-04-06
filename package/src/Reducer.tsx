@@ -4,14 +4,19 @@ import getLocale from "./getLocale"
 import dayjs from "dayjs"
 import { create } from 'zustand'
 
+export type MONTH_STATE = 'prev' | 'current' | 'next'
+
 interface CalendarDay {
     idx: number
+    year: number
+    month: number
     date: number
     dateStr: string
     isToday: boolean
     isHoliday: boolean
     isSelected: boolean
     isDisplay: boolean
+    monthState: MONTH_STATE
 }
 
 interface CalendarState {
@@ -55,7 +60,9 @@ interface CalendarState {
 export const useCalendarState = create<CalendarState>()((set) => ({
     displayYear: 0,
     displayMonth: 0,
-    calendar: Array.from({ length: 42 }, (_, i) => ({ idx: i, date: 0, dateStr: '', isHoliday: false, isSelected: false, isDisplay: false, isToday: false })),
+    calendar: Array.from({ length: 42 }, (_, i) => (
+        { idx: i, dateStr: '', isHoliday: false, isSelected: false, isDisplay: false, isToday: false, year: 0, month: 0, date: 0, monthState: 'current' }
+    )),
     selectedWeekends: [0, 6],
     isShown: false,
     locale: 'en',
@@ -210,15 +217,39 @@ const updateCalendarDay = (
         if (firstDayOfWeek === day && date === 1) {
             inRange = true
         }
+        let dateStr = ''
         dayList[i].isToday = year === today.getFullYear() && month === today.getMonth() && date === today.getDate()
         if (inRange) {
+            dateStr = date.toString()
+            dayList[i].year = year
+            dayList[i].month = month
             dayList[i].date = date
             dayList[i].dateStr = date.toString()
+            dayList[i].monthState = 'current'
             date++
         } else {
-            dayList[i].dateStr = ''
+            if (date === 1 && !inRange) {
+                dateStr = ''
+                const lastMonth = new Date(year, month, i - firstDayOfWeek + 1)
+                dayList[i].year = lastMonth.getFullYear()
+                dayList[i].month = lastMonth.getMonth()
+                dayList[i].date = lastMonth.getDate()
+                dayList[i].dateStr = lastMonth.getDate().toString()
+                dayList[i].monthState = 'prev'
+            } else if (date > lastDayOfMonthDate) {
+                dateStr = ''
+                const nextMonth = new Date(year, month + 1, i - lastDayOfMonthDate - 1)
+                dayList[i].year = nextMonth.getFullYear()
+                dayList[i].month = nextMonth.getMonth()
+                dayList[i].date = nextMonth.getDate()
+                dayList[i].dateStr = nextMonth.getDate().toString()
+                dayList[i].monthState = 'next'
+            } else {
+                dateStr = ''
+                dayList[i].dateStr = ''
+            }
         }
-        if (i > 7 && day === 0 && dayList[i].dateStr === '') {
+        if (i > 7 && day === 0 && dateStr === '') {
             isDisplay = false
         }
         dayList[i].isDisplay = isDisplay
@@ -228,8 +259,6 @@ const updateCalendarDay = (
             inRange = false
         }
     }
-
-    console.log('[updateCalendarDay]', dayList)
 
     return dayList
 }

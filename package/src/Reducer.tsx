@@ -56,7 +56,7 @@ const currentDate = new Date()
 export const useCalendarState = create<CalendarState>()((set) => ({
     displayYear: currentDate.getFullYear(),
     displayMonth: currentDate.getMonth(),
-    calendar: Array.from({ length: 42 }, (_, i) => ({ idx: i, date: 0, dateStr: '', isHoliday: false, isSelected: false })),
+    calendar: Array.from({ length: 42 }, (_, i) => ({ idx: i, date: 0, dateStr: '', isHoliday: false, isSelected: false, isDisplay: false })),
     selectedWeekends: [0, 6],
     isShown: false,
     locale: 'en',

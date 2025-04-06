@@ -10,6 +10,7 @@ interface CalendarDay {
     dateStr: string
     isHoliday: boolean
     isSelected: boolean
+    isDisplay: boolean
 }
 
 interface CalendarState {
@@ -25,6 +26,7 @@ interface CalendarState {
     selectedHour?: number
     selectedMinute?: number
     selectedWeekends: number[]
+    numberOfWeeks: number
     calendar: CalendarDay[]
     isShown: boolean
     holiday: string[]
@@ -63,6 +65,7 @@ export const useCalendarState = create<CalendarState>()((set) => ({
     dateFormat: 'YYYY-MM-DD',
     dateTimeFormat: 'YYYY-MM-DD HH:mm',
     timeMode: false,
+    numberOfWeeks: 6,
     show: () => set((state) => {
         const inputContent = state.inputElement?.current?.value
         const hasData = inputContent && inputContent.length > 0
@@ -199,24 +202,33 @@ const updateCalendarDay = (
     const firstDayOfWeek = firstDayOfMonth.getDay()
     const lastDayOfMonthDate = lastDayOfMonth.getDate()
     let inRange = false
-    let day = 1
+    let date = 1
+    let day = 0
+    let isDisplay = true
     for (let i = 0; i < 42; i++) {
-        if (firstDayOfWeek === i && day === 1) {
+        day = i % 7
+        if (firstDayOfWeek === day && date === 1) {
             inRange = true
         }
         if (inRange) {
-            dayList[i].date = day
-            dayList[i].dateStr = day.toString()
-            day++
+            dayList[i].date = date
+            dayList[i].dateStr = date.toString()
+            date++
         } else {
             dayList[i].dateStr = ''
         }
+        if (i > 7 && day === 0 && dayList[i].dateStr === '') {
+            isDisplay = false
+        }
+        dayList[i].isDisplay = isDisplay
         dayList[i].isSelected = year === selectedYear && month === selectedMonth && dayList[i].date === selectedDay
-        dayList[i].isHoliday = selectedWeekends.includes(i % 7)
-        if (day > lastDayOfMonthDate) {
+        dayList[i].isHoliday = selectedWeekends.includes(day)
+        if (date > lastDayOfMonthDate) {
             inRange = false
         }
     }
+
+    console.log('[updateCalendarDay]', dayList)
 
     return dayList
 }

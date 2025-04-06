@@ -1,63 +1,168 @@
-import { createContext, type Dispatch, type ReactNode, type RefObject, useContext, useReducer } from "react"
+import type { RefObject } from "react"
 import type { LocaleInfo } from "./getLocale"
 import getLocale from "./getLocale"
+import dayjs from "dayjs"
+import { create } from 'zustand'
 
 interface CalendarDay {
     idx: number
     date: string
-    isWeekend: boolean
+    isHoliday: boolean
 }
 
-export interface CalendarState {
-    year: number
-    month: number
-    day: number
-    selectedYear: number
-    selectedMonth: number
-    selectedDay: number
+interface CalendarState {
     locale: string
     localeInfo: LocaleInfo
-    show: boolean
+    mainElement?: RefObject<HTMLDivElement | null> | null
+    inputElement?: RefObject<HTMLInputElement | null> | null
+    displayYear: number
+    displayMonth: number
+    selectedYear?: number
+    selectedMonth?: number
+    selectedDay?: number
+    selectedHour?: number
+    selectedMinute?: number
     selectedWeekends: number[]
     calendar: CalendarDay[]
-    mainElement: RefObject<HTMLDivElement | null> | null
-    inputElement: RefObject<HTMLInputElement | null> | null
+    isShown: boolean
+    holiday: string[]
+    dateFormat: string
+    dateTimeFormat: string
+    timeMode: boolean
+    setDisplayYear: (year: number) => void
+    setDisplayMonth: (month: number) => void
+    setSelectedYear: (year: number) => void
+    setSelectedMonth: (month: number) => void
+    setSelectedDay: (day: number) => void
+    setSelectedHour: (hour: number) => void
+    setSelectedMinute: (minute: number) => void
+    setLocale: (locale: string) => void
+    setWeekends: (weekends: number[]) => void
+    setMainElement: (mainElement: RefObject<HTMLDivElement | null> | null) => void
+    setInputElement: (inputElement: RefObject<HTMLInputElement | null> | null) => void
+    setHoliday: (holiday: string[]) => void
+    setTimeMode: (timeMode: boolean) => void
+    prevMonth: () => void
+    nextMonth: () => void
+    show: () => void
+    hide: () => void
 }
 
-export type CalendarAction = {
-    type: 'SELECT_YEAR'
-    payload: {
-        year: number
-    }
-} | {
-    type: 'SELECT_MONTH'
-    payload: {
-        month: number
-    }
-} | {
-    type: 'SELECT_DAY'
-    payload: {
-        day: number
-    }
-} | {
-    type: 'SHOW'
-} | {
-    type: 'HIDE'
-} | {
-    type: 'SET_MAIN_ELEMENT'
-    payload: {
-        mainElement: RefObject<HTMLDivElement | null> | null
-    }
-} | {
-    type: 'SET_INPUT_ELEMENT'
-    payload: {
-        inputElement: RefObject<HTMLInputElement | null> | null
-    }
-} | {
-    type: 'PREV_MONTH'
-}
+const currentDate = new Date()
 
-const updateCalendarDay = (year: number, month: number, dayList: CalendarDay[], selectedWeekends: number[]): CalendarDay[] => {
+export const useCalendarState = create<CalendarState>()((set) => ({
+    displayYear: currentDate.getFullYear(),
+    displayMonth: currentDate.getMonth(),
+    calendar: Array.from({ length: 42 }, (_, i) => ({ idx: i, date: '', isHoliday: false })),
+    selectedWeekends: [0, 6],
+    isShown: false,
+    locale: 'en',
+    localeInfo: getLocale({ locale: 'en' }),
+    holiday: [],
+    dateFormat: 'YYYY-MM-DD',
+    dateTimeFormat: 'YYYY-MM-DD HH:mm',
+    timeMode: false,
+    show: () => set((state) => {
+        const inputContent = state.inputElement?.current?.value
+        const hasData = inputContent && inputContent.length > 0
+        let isSelected = false
+        const today = new Date()
+        let year = today.getFullYear()
+        let month = today.getMonth()
+        let day = today.getDate()
+        if (inputContent && hasData) {
+            const parseDate = dayjs(inputContent, state.dateTimeFormat)
+            if (parseDate.isValid()) {
+                year = parseDate.year()
+                month = parseDate.month()
+                day = parseDate.date()
+                isSelected = true
+            }
+        }
+        const updatedCalendar = updateCalendarDay(year, month, state.calendar, state.selectedWeekends, state.holiday)
+
+        return {
+            displayYear: year,
+            displayMonth: month,
+            selectedYear: isSelected ? year : undefined,
+            selectedMonth: isSelected ? month : undefined,
+            selectedDay: isSelected ? day : undefined,
+            calendar: updatedCalendar,
+            isShown: true,
+        }
+    }),
+    hide: () => set({ isShown: false }),
+    setLocale: (locale: string) => set(() => {
+        return {
+            locale,
+            localeInfo: getLocale({ locale }),
+        }
+    }),
+    setDisplayYear: (year: number) => set((state) => {
+        const updatedCalendar = updateCalendarDay(year, state.displayMonth, state.calendar, state.selectedWeekends, state.holiday)
+        return {
+            displayYear: year,
+            calendar: updatedCalendar,
+        }
+    }),
+    setDisplayMonth: (month: number) => set((state) => {
+        const updatedCalendar = updateCalendarDay(state.displayYear, month, state.calendar, state.selectedWeekends, state.holiday)
+        return {
+            displayMonth: month,
+            calendar: updatedCalendar,
+        }
+    }),
+    setSelectedYear: (year: number) => set(() => ({ selectedYear: year })),
+    setSelectedMonth: (month: number) => set(() => ({ selectedMonth: month })),
+    setSelectedDay: (day: number) => set(() => ({ selectedDay: day })),
+    setSelectedHour: (hour: number) => set(() => ({ selectedHour: hour })),
+    setSelectedMinute: (minute: number) => set(() => ({ selectedMinute: minute })),
+    setMainElement: (mainElement: RefObject<HTMLDivElement | null> | null) => set(() => ({ mainElement })),
+    setInputElement: (inputElement: RefObject<HTMLInputElement | null> | null) => set(() => ({ inputElement })),
+    setWeekends: (weekends: number[]) => set((state) => {
+        const updatedCalendar = updateCalendarDay(state.displayYear, state.displayMonth, state.calendar, weekends, state.holiday)
+        return {
+            selectedWeekends: weekends,
+            calendar: updatedCalendar,
+        }
+    }),
+    setHoliday: (holiday: string[]) => set((state) => {
+        const updatedCalendar = updateCalendarDay(state.displayYear, state.displayMonth, state.calendar, state.selectedWeekends, holiday)
+        return {
+            holiday,
+            calendar: updatedCalendar,
+        }
+    }),
+    setTimeMode: (timeMode: boolean) => set(() => ({ timeMode })),
+    prevMonth: () => set((state) => {
+        const month = state.displayMonth - 1 < 0 ? 11 : state.displayMonth - 1
+        const year = month === 11 ? state.displayYear - 1 : state.displayYear
+        const updatedCalendar = updateCalendarDay(year, month, state.calendar, state.selectedWeekends, state.holiday)
+        return {
+            displayYear: year,
+            displayMonth: month,
+            calendar: updatedCalendar,
+        }
+    }),
+    nextMonth: () => set((state) => {
+        const month = state.displayMonth + 1 > 11 ? 0 : state.displayMonth + 1
+        const year = month === 0 ? state.displayYear + 1 : state.displayYear
+        const updatedCalendar = updateCalendarDay(year, month, state.calendar, state.selectedWeekends, state.holiday)
+        return {
+            displayYear: year,
+            displayMonth: month,
+            calendar: updatedCalendar,
+        }
+    }),
+}))
+
+const updateCalendarDay = (
+    year: number,
+    month: number,
+    dayList: CalendarDay[],
+    selectedWeekends: number[],
+    _holiday: string[]
+): CalendarDay[] => {
     const firstDayOfMonth = new Date(year, month, 1)
     const lastDayOfMonth = new Date(year, month + 1, 0)
     const firstDayOfWeek = firstDayOfMonth.getDay()
@@ -74,95 +179,11 @@ const updateCalendarDay = (year: number, month: number, dayList: CalendarDay[], 
         } else {
             dayList[i].date = ''
         }
-        dayList[i].isWeekend = selectedWeekends.includes(i % 7)
+        dayList[i].isHoliday = selectedWeekends.includes(i % 7)
         if (day > lastDayOfMonthDate) {
             inRange = false
         }
     }
 
     return dayList
-}
-
-const calendarReducer = (state: CalendarState, action: CalendarAction): CalendarState => {
-    switch (action.type) {
-        case 'SELECT_YEAR':
-            return { ...state, selectedYear: action.payload.year }
-        case 'SELECT_MONTH':
-            return { ...state, selectedMonth: action.payload.month }
-        case 'SELECT_DAY':
-            return { ...state, selectedDay: action.payload.day }
-        case 'SHOW':
-            return { ...state, show: true }
-        case 'HIDE':
-            return { ...state, show: false }
-        case 'SET_MAIN_ELEMENT':
-            return { ...state, mainElement: action.payload.mainElement }
-        case 'SET_INPUT_ELEMENT':
-            return { ...state, inputElement: action.payload.inputElement }
-        case 'PREV_MONTH': {
-            const prevDate = new Date(state.year, state.month - 1)
-            state.calendar = updateCalendarDay(prevDate.getFullYear(), prevDate.getMonth(), state.calendar, state.selectedWeekends)
-            return {
-                ...state,
-                year: prevDate.getFullYear(),
-                month: prevDate.getMonth(),
-                day: prevDate.getDate(),
-            }
-        }
-        default:
-            return state
-    }
-}
-
-export const CalendarContext = createContext<
-    { state: CalendarState, dispatch: Dispatch<CalendarAction> } | undefined
->(undefined)
-
-const initialState = (): CalendarState => {
-    const date = new Date()
-    const defaultWeekends = [0, 6]
-    const calendar = Array.from({ length: 42 }, (_, i) => ({
-        idx: i,
-        date: '',
-        isWeekend: false,
-    }))
-
-    return {
-        year: date.getFullYear(),
-        month: date.getMonth(),
-        day: date.getDate(),
-        selectedYear: date.getFullYear(),
-        selectedMonth: date.getMonth(),
-        selectedDay: date.getDate(),
-        locale: 'en',
-        localeInfo: getLocale({ locale: 'en' }),
-        show: false,
-        selectedWeekends: defaultWeekends,
-        mainElement: null,
-        inputElement: null,
-        calendar: updateCalendarDay(date.getFullYear(), date.getMonth(), calendar, defaultWeekends),
-    }
-}
-
-export const CalendarProvider = ({ children }: { children?: ReactNode }) => {
-    const [state, dispatch] = useReducer(calendarReducer, initialState())
-
-    return (
-        <CalendarContext.Provider value={{ state, dispatch }}>
-            {children}
-        </CalendarContext.Provider>
-    )
-}
-
-export const useCalendar = () => {
-    const context = useContext(CalendarContext)
-    if (!context) {
-        throw new Error('useCalendar must be used within a CalendarProvider')
-    }
-    return context
-}
-
-export const useCalendarSelector = <T,>(selector: (state: CalendarState) => T): T => {
-    const { state } = useCalendar()
-    return selector(state)
 }

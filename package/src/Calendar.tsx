@@ -15,6 +15,7 @@ interface CalendarRef {
 
 interface CalendarProps {
     inputRef: RefObject<HTMLInputElement | null> | null
+    showTime?: boolean
     onDateSelected?: (date: string) => void
     ref?: Ref<CalendarRef>
     children?: ReactNode
@@ -26,6 +27,7 @@ export const Calendar = ({ inputRef, onDateSelected, ref, children, ...props }: 
     const hideCalendar = useCalendarState(state => state.hide)
     const setInputElement = useCalendarState(state => state.setInputElement)
     const setOnDateSelected = useCalendarState(state => state.setOnDateSelected)
+    const setTimeMode = useCalendarState(state => state.setTimeMode)
 
     useImperativeHandle(ref, () => {
         return {
@@ -39,6 +41,10 @@ export const Calendar = ({ inputRef, onDateSelected, ref, children, ...props }: 
             }
         }
     })
+
+    useEffect(() => {
+        setTimeMode(props.showTime ?? false)
+    }, [props.showTime, setTimeMode])
 
     useEffect(() => {
         setOnDateSelected(onDateSelected)

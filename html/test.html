@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        .timer-panel {
+            text-align: center;
+            display: flex;
+            flex: auto;
+            height: 224px;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            pointer-events: auto;
+        }
+
+        .timer-list {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.45) transparent;
+            flex: 1 0 auto;
+            width: 56px;
+            margin: 4px 0;
+            padding: 0;
+            overflow-y: hidden;
+            text-align: start;
+            list-style: none;
+            overflow-x: hidden;
+        }
+
+        .timer-list:hover {
+            overflow-y: auto;
+        }
+
+        .timer-item {
+            scrollbar-color: rgba(0, 0, 0, 0.45) transparent;
+            cursor: pointer;
+            font-size: 16px;
+            margin-inline: 4px;
+        }
+
+        .timer-cell {
+            scrollbar-color: rgba(0, 0, 0, 0.45) transparent;
+            display: block;
+            width: 48px;
+            height: 28px;
+            margin: 0;
+            padding-block: 0;
+            padding-inline-end: 0;
+            padding-inline-start: 14px;
+            color: rgba(0, 0, 0, 0.88);
+            line-height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .dropdown {
+            min-width: 146px;
+            box-sizing: border-box;
+            position: absolute;
+            list-style: none;
+        }
+
+        .panel-container {
+            overflow: hidden;
+            vertical-align: top;
+            display: inline-block;
+            pointer-events: auto;
+        }
+
+        .panel-layout {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: stretch;
+        }
+
+        .picker-panel {
+            vertical-align: top;
+            background: transparent;
+            border-radius: 0;
+            border-width: 0;
+            display: inline-flex;
+            flex-direction: column;
+            text-align: center;
+            outline: none;
+        }
+
+        .picker-time-panel {
+            padding-top: 4px;
+            width: auto;
+            min-width: auto;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dropdown">
+        <div class="panel-container">
+            <div class="panel-layout">
+                <div>
+                    <div class="picker-panel" tabindex="0">
+                        <div class="picker-time-panel" tabindex="0">
+                            <div class="timer-panel">
+                                <ul id="minute" class="timer-list">
+                                    <li class="timer-item">
+                                        <div class="timer-cell">01</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">02</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">03</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">04</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">05</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">06</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">07</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">08</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">09</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">10</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">11</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">12</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">13</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">14</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">15</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">16</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">17</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">18</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">19</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">20</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">21</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">22</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">23</div>
+                                    </li>
+                                </ul>
+                                <ul class="timer-list">
+                                    <li class="timer-item">
+                                        <div class="timer-cell">01</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">02</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">03</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">04</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">05</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">06</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">07</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">08</div>
+                                    </li>
+                                </ul>
+                                <ul class="timer-list">
+                                    <li class="timer-item">
+                                        <div class="timer-cell">01</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">02</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">03</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">04</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">05</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">06</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">07</div>
+                                    </li>
+                                    <li class="timer-item">
+                                        <div class="timer-cell">08</div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -34,6 +34,8 @@ interface CalendarState {
     selectedWeekends: number[]
     numberOfWeeks: number
     calendar: CalendarDay[]
+    hoursList: number[]
+    minutesList: number[]
     isShown: boolean
     holiday: string[]
     dateFormat: string
@@ -74,6 +76,8 @@ export const useCalendarState = create<CalendarState>()((set) => ({
     dateTimeFormat: 'YYYY-MM-DD HH:mm',
     timeMode: false,
     numberOfWeeks: 6,
+    hoursList: Array.from({ length: 24 }, (_, i) => i),
+    minutesList: Array.from({ length: 60 }, (_, i) => i),
     show: () => set((state) => {
         const inputContent = state.inputElement?.current?.value
         const hasData = inputContent && inputContent.length > 0

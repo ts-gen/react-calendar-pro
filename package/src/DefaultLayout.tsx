@@ -8,6 +8,7 @@ import ArrowNext from "./ArrowNext"
 import Header from "./Header"
 import Body from "./Body"
 import { useCalendarState } from './Reducer'
+import TimeControl from './TimeControl'
 
 const DefaultLayout = (props: Omit<ComponentProps<"input">, "ref">) => {
     const setMainElement = useCalendarState((state) => state.setMainElement)
@@ -26,22 +27,25 @@ const DefaultLayout = (props: Omit<ComponentProps<"input">, "ref">) => {
 
     return (
         <div {...props} tabIndex={0} className="vc" data-vc="calendar" data-vc-theme="light" data-vc-type="default" role="application" ref={ref} data-vc-input="">
-            <Header>
-                <ArrowPrev />
-                <Header.Content>
-                    <Month />
-                    <Year />
-                </Header.Content>
-                <ArrowNext />
-            </Header>
-            <Body>
-                <Body.Content>
-                    <Week />
-                    <Dates />
-                    {/* <DateRangeTooltip /> */}
-                </Body.Content>
-            </Body>
-            {/* <ControlTime /> */}
+            <div data-vc="main-body">
+                <Header>
+                    <ArrowPrev />
+                    <Header.Content>
+                        <Month />
+                        <Year />
+                    </Header.Content>
+                    <ArrowNext />
+                </Header>
+                <Body>
+                    <Body.Content>
+                        <Week />
+                        <Dates />
+                        {/* <DateRangeTooltip /> */}
+                    </Body.Content>
+                </Body>
+                {/* <ControlTime /> */}
+            </div>
+            <TimeControl />
         </div>
     )
 }

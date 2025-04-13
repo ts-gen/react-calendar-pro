@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { getByTestId, userEvent, waitFor, within } from '@storybook/testing-library'
+import { getByTestId, userEvent, waitFor, within } from '@storybook/test'
 import Calendar from "../Calendar"
 import { useCallback, useRef, useState } from "react"
 
@@ -23,6 +23,22 @@ export const Default: Story = {
             <div style={{ backgroundColor: '#f8fafc' }}>
                 <input className="form-control form-control-sm" type="text" ref={inputRef} />
                 <Calendar inputRef={inputRef} />
+            </div>
+        )
+    }
+}
+
+export const TestCalendarWithTime: Story = {
+    args: {
+        inputRef: null,
+    },
+    render: () => {
+        const inputRef = useRef<HTMLInputElement | null>(null)
+
+        return (
+            <div style={{ backgroundColor: '#f8fafc' }}>
+                <input className="form-control form-control-sm" type="text" ref={inputRef} />
+                <Calendar inputRef={inputRef} showTime={true} />
             </div>
         )
     }
